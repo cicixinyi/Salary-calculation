@@ -1,0 +1,7 @@
+altgraph @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_2909n2r8cr/croot/altgraph_1670426089609/work
+et-xmlfile==1.1.0
+guizero==1.4.0
+macholib @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_54_apmnh9j/croot/macholib_1670513261318/work
+openpyxl==3.0.10
+pyinstaller @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_bef5inat1e/croot/pyinstaller_1670881056649/work
+pyinstaller-hooks-contrib @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_c3tpqv39mq/croot/pyinstaller-hooks-contrib_1670877320927/work

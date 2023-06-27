@@ -1,7 +1,11 @@
+import os
+import sys
 import Employee, EmployeeList
-from openpyxl import *
+from openpyxl import Workbook, load_workbook
 import datetime
 import calendar
+
+base = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 def getDate():
         month = int(datetime.date.today().strftime("%m"))
@@ -20,18 +24,19 @@ def setDate(timelist):
 def readfile(year,month,day):
        # current_m = getDate()[1]
        lastDay = calendar.monthrange(year, month)[1]
-       filename="/Users/xinyixu/Desktop/工资/{}工资单.xlsx".format(year)
+       filename=os.path.join(base,"{}工资单.xlsx".format(year))
        list_wb = load_workbook(filename)
        sheet = list_wb["{}月".format(month)]
        # 复制上个月工资表
        if day == lastDay and month < 12:
-              target = list_wb.copy_worksheet(sheet)
-              target.title = "{}月".format(month+1)
-              for row in range(2,target.max_row+1):
-                      for col in range(4,34):
-                          target.cell(row=row,column=col).value = 0.00    
-              list_wb.save(filename)
-              print('created')
+                target = list_wb.copy_worksheet(sheet)
+                target.title = "{}月".format(month+1)
+                for row in range(2,target.max_row+1):
+                        target.cell(row=row,column=37).value = 0.00   
+                        for col in range(4,35):
+                            target.cell(row=row,column=col).value = 0.00    
+                list_wb.save(filename)
+                print('created')
        # 复制第二年工资表
        elif month == 12 and day == lastDay:
               new_wb = Workbook()
@@ -41,7 +46,8 @@ def readfile(year,month,day):
                 for j,cell in enumerate(row):
                         ws.cell(row=i+1, column=j+1, value=cell.value)
               for row in range(2,ws.max_row):
-                      for col in range(4,34):
+                      ws.cell(row=row,column=37).value = 0.00  
+                      for col in range(4,35):
                           ws.cell(row=row,column=col).value = 0.00    
               new_wb.save("/Users/xinyixu/Desktop/工资/{}工资单.xlsx".format(year+1))
               print('created')
@@ -58,6 +64,7 @@ def readfile(year,month,day):
                         'meal': row[36],
                         'payment': row[37]
                 }
+       
        # print(employee_info)
        list = EmployeeList.EmployeeList(employee_info) 
        employ_dic = {}
@@ -69,4 +76,4 @@ def readfile(year,month,day):
        # print(employ_dic)
        return list, employ_dic
 
-readfile(2023,4,6)
+# readfile(2023,5,31)

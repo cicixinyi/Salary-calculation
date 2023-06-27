@@ -1,9 +1,10 @@
 #今天的工资
-
+import os
+import sys
 from guizero import *
 import workHour
 import readfile
-from openpyxl import *
+import openpyxl
 
 class employee_UI:
     def __init__(self):
@@ -11,13 +12,14 @@ class employee_UI:
         self.a_workHour = 0.0
         self.e_workHour = 0.0
         self.day_workHour = 0.0
+        self.meal = 0
         self.year = readfile.getDate()[0]
         self.month = readfile.getDate()[1]
         self.day = readfile.getDate()[2]
         self.employ_done = 1
         self.reachlast = False
-        self.filename = "/Users/xinyixu/Desktop/工资/{}工资单.xlsx".format(self.year)
-        self.list_wb = load_workbook(self.filename)
+        self.filename = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),"{}工资单.xlsx".format(self.year))
+        self.list_wb = openpyxl.load_workbook(self.filename)
         self.sheet = self.list_wb["{}月".format(self.month)]
         self.employ_list, self.employ_dic = readfile.readfile(self.year,self.month,self.day)
         # print(self.employ_list)
@@ -60,10 +62,8 @@ class employee_UI:
         self.ae.text_size = 18
         Text(self.shijian, text='', size=10, grid=[0,8])
 
-        self.noExtra = CheckBox(self.shijian, text='今天不加班', grid=[0,9])
+        self.noExtra = CheckBox(self.shijian, text='不加班', grid=[0,10])
         self.noExtra.text_size=23
-        self.extra = CheckBox(self.shijian, text='加班：', grid=[0,10])
-        self.extra.text_size=23
         self.evening_all = CheckBox(self.shijian, text='全勤（18:00 - 21:00）', grid=[1,10])
         self.evening_all.text_size=20
         self.evening = CheckBox(self.shijian, text='如有请假，请输入上下班时间：', grid=[2,10])
@@ -102,23 +102,23 @@ class employee_UI:
         self.afternoon.update_command(command=self.choose_all_a)
         self.afternoon_no.update_command(command=self.choose_all_a)
         self.noExtra.update_command(command=self.choose_extra)
-        self.extra.update_command(command=self.choose_extra)
         self.evening_all.update_command(command=self.choose_all_e)
         self.evening.update_command(command=self.choose_all_e)  
         # print(self.m_workHour, self.a_workHour, self.e_workHour, self.m_workHour + self.a_workHour + self.e_workHour)
+        yes = PushButton(self.yuangong, text='确      认', height='fill', width='fill', command=self.yesButtonPress)
+        yes.text_size = 35
         button_box = Box(self.yuangong, height='fill', width='fill')
         delete = PushButton(button_box, text='删除该员工', height='fill', width='fill', align='left', command=self.deleteButtonPress)
         delete.text_size = 30
         reset = PushButton(button_box, text='重      置', height='fill', width='fill', align='right', command=self.resetButtonPress, args=[self.shijian])
-        reset.text_size = 35
-        yes = PushButton(self.yuangong, text='确      认', height='fill', width='fill', command=self.yesButtonPress)
-        yes.text_size = 35
+        reset.text_size = 35  
         # self.yuangong.set_full_screen()
         self.yuangong.display()
     
     def yesButtonPress(self):
         self.currentEmployee.setWorkTime(self.day_workHour)
-        # print(self.currentEmployee.getWorkTime)
+        self.currentEmployee.setMeal(self.meal)
+        print(self.currentEmployee.getWorkTime(), self.currentEmployee.getMeal())
         today_col = ''
         for head in self.sheet[1]:
             if head.value == self.day:
@@ -214,7 +214,7 @@ class employee_UI:
             self.ae.disable()
         self.day_workHour = self.day_workHour + self.a_workHour
         if self.m_workHour+self.a_workHour >= 6.5:
-            self.currentEmployee.setMeal(8)
+            self.meal += 8
         self.conclude.append(str(self.a_workHour) + ' 小时') 
 
     def choose_all_e(self):
@@ -225,30 +225,29 @@ class employee_UI:
             self.es.disable()
             self.eeText.disable()
             self.ee.disable()
+            self.noExtra.disable()
         elif self.evening.value == 1:
             self.e_workHour = workHour.workHour(self.es.value,self.ee.value)
             self.evening_all.disable()
+            self.noExtra.disable()
         self.day_workHour = self.day_workHour + self.e_workHour
         if self.e_workHour >= 2:
-            self.currentEmployee.setMeal(6)
-        self.conclude.append(str(self.e_workHour) + ' 小时，共计 ' + str(self.day_workHour) + ' 小时')
+            self.meal += 6
+        self.conclude.append('加班 ' + str(self.e_workHour) + ' 小时，共计 ' + str(self.day_workHour) + ' 小时，')
         
     def choose_extra(self):
         if self.noExtra.value == 1:
-            self.extra.disable()
             self.evening_all.disable()
             self.evening.disable()
             self.esText.disable()
             self.es.disable()
             self.eeText.disable()
             self.ee.disable()
-            self.conclude.append('，共计 ' + str(self.day_workHour) + ' 小时')
-        elif self.extra.value == 1:
-            self.noExtra.disable()
-            self.conclude.append('，加班 ')
+            self.conclude.append('不加班，共计 ' + str(self.day_workHour) + ' 小时')
 
     def resetButtonPress(self,box):
         self.day_workHour = 0.0
+        self.meal = 0
         for widget in box.children:
             if type(widget) == CheckBox:
                 # print(1,widget)
@@ -263,6 +262,6 @@ class employee_UI:
                 widget.enable()
         self.conclude.clear() 
         self.conclude.append('上午上班 ')
-        print('done')
+        print('reset')
 
 # employee_UI().edit()
